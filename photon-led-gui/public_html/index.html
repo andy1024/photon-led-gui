@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <style type="text/css">
+            body {
+                font-family:Verdana,Arial,Helvetica,sans-serif;
+            }
+            p {
+                text-align:center;
+            }
+
+            .bct_ticker_box, .bct_button_ready, .bct_button_waiting, .bct_button_error {
+                border-radius:5px;
+                font-size: 1em;
+                background:#EEE;
+                width: 230px;
+                padding: 10px 10px 10px 10px;
+                color:white;
+                text-align:center;
+            }
+
+            .bct_button_ready, .bct_button_waiting, .bct_button_error {
+                cursor:pointer;	
+                margin:10px 10px 60px 60px;
+                width: 80px;
+            }
+
+            .bct_button_ready {
+                background:#24F;
+            }
+
+            .bct_button_waiting {
+                background:#888;
+            }
+
+            .bct_button_error {
+                background:#F00;
+            }
+
+        </style>
+        <title>Insert title here</title>
+        <script type="text/javascript">
+            function changeButtonStyle(elemId, newStyle, newCaption) {
+                var elem = document.getElementById(elemId);
+                elem.className = newStyle;
+                elem.innerHTML = newCaption;
+            }
+
+            function led(state) {
+                var xmlhttp;
+                changeButtonStyle("led-on", "bct_button_waiting", "wait");
+                changeButtonStyle("led-off", "bct_button_waiting", "wait");
+
+                // code for web browsers only, screw IE
+                xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function () {
+                    if (xmlhttp.readyState === 4) {
+                        var errorOccured = false;
+                        if (xmlhttp.status === 200) {
+                            var ro = JSON.parse(xmlhttp.responseText);
+                            if (ro.return_value < 0) {
+                                errorOccured = true;
+                            }
+                        } else {
+                            errorOccured = true;
+                        }
+                        if (errorOccured) {
+                            changeButtonStyle("led-on", "bct_button_error", "Error");
+                            changeButtonStyle("led-off", "bct_button_error", "Error");
+                        } else {
+                            changeButtonStyle("led-on", "bct_button_ready", "LED on");
+                            changeButtonStyle("led-off", "bct_button_ready", "LED off");
+                        }
+                    }
+                };
+                var params;
+                if (state === true) {
+                    params = "args=on";
+                } else {
+                    params = "args=off";
+                }
+                xmlhttp.open("POST", "https://api.particle.io/v1/devices/<YOUR_PARTICLE_DEVICE_NAME>/led?access_token=<YOUR_ACCESS_TOKEN>", true);
+                xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xmlhttp.send(params);
+            }
+        </script>
+    </head>
+    <div class="bct_ticker_box">
+        <div id="led-on" class="bct_button_ready" onclick="led(true);">
+            LED on
+        </div>
+        <div id="led-off" class="bct_button_ready" onclick="led(false);">
+            LED off
+        </div>
+    </div>
+</body>
+</html>
+
